@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -110,11 +110,11 @@ def main():
     for i in range(30):
         with cols[i % 3]:
             input_val = st.number_input(
-                f'Feature V{i}',
+                f'Feature V{i + 1}',
                 value=0.0,
                 step=0.1,
                 format="%.6f",
-                help=f"Enter value for feature V{i}"
+                help=f"Enter value for feature V{i + 1}"
             )
             input_values.append(input_val)
     
@@ -136,7 +136,7 @@ def main():
         # Show feature importance
         with st.expander("📈 Feature Importance Analysis"):
             importance = pd.DataFrame({
-                'Feature': [f'V{i}' for i in range(30)],
+                'Feature': [f'V{i + 1}' for i in range(30)],
                 'Importance': abs(model.coef_[0])
             }).sort_values('Importance', ascending=False)
             
