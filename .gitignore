@@ -1,2 +1,4 @@
 venv
 creditcard.csv
+__pycache__
+users.json

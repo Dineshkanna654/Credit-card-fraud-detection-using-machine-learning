@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
+from auth_system import AuthSystem, login_page, register_page, logout, auth_required
 
 # Set page configuration
 st.set_page_config(
@@ -14,7 +15,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Add CSS to improve the UI
+    # Add CSS to improve the UI
 st.markdown("""
     <style>
     .main {
@@ -23,6 +24,20 @@ st.markdown("""
     .stButton>button {
         width: 100%;
         margin-top: 1rem;
+    }
+    .auth-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
+    }
+    .stForm {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -61,9 +76,15 @@ def train_model(X_train, y_train):
         st.error(f"Error training model: {str(e)}")
         return None
 
-def main():
+@auth_required
+def main_app():
     st.title("🔍 Credit Card Fraud Detection System")
-    st.write("This system uses machine learning to detect potentially fraudulent credit card transactions.")
+    st.write(f"Welcome, {st.session_state['username']}! This system uses machine learning to detect potentially fraudulent credit card transactions.")
+    
+    # Add logout button in sidebar
+    with st.sidebar:
+        st.title(f"👤 {st.session_state['username']}")
+        st.button("Logout", on_click=logout)
     
     # Load and process data
     data = load_and_process_data()
@@ -144,6 +165,31 @@ def main():
             sns.barplot(data=importance.head(10), x='Feature', y='Importance')
             plt.xticks(rotation=45)
             st.pyplot(fig)
+
+def main():
+    # Initialize session state
+    if 'auth_page' not in st.session_state:
+        st.session_state['auth_page'] = 'login'
+    
+    # Check if user is already authenticated
+    auth_system = AuthSystem()
+    authenticated, username = auth_system.verify_session()
+    
+    if authenticated:
+        main_app()
+    else:
+        # Render authentication pages
+        with st.container():
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+                
+                if st.session_state['auth_page'] == 'login':
+                    login_page()
+                elif st.session_state['auth_page'] == 'register':
+                    register_page()
+                
+                st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
